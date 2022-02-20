@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block title %}
+profile detail
+{% endblock %}
+
+{% block content %}
+<div class="ui modal mymodal">
+    {% if is_empty %}
+    <h1>No profiles to interact</h1>
+    {% endif %}
+    {% for obj in profiles%}
+    <div class="ui segment">
+        <div class="ui grid">
+            <div class="row">
+                <div class="three wide column">
+                    <img class="ui small circular image" src={{ obj.avatar.url}}>
+                </div>
+                <div class="thirteen wide column">
+                    <h3>{{ obj.user }}</h3>
+                    <p>{{ obj.bio}}</p>
+                    <a href="{{ obj.get_absolute_url }}"><button class="ui primary button mb-5 w-big">See
+                            profile</button></a>
+                    <br>
+                    {% if obj.user not in rel_receiver and obj.user not in rel_sender %}
+                    <form action="{% url 'profiles:send-invite' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="profile_pk" value={{ obj.pk }}>
+                        <button type="submit" class="ui positive basic button mb-5 w-big"><i
+                                class="plus square icon"></i>Add to friends</button>
+
+                    </form>
+                    {% endif %}
+                    {% if obj.user in rel_receiver and request.user not in obj.friends.all %}
+                    <button class="ui disabled button mb-5 w-big"><i class="user icon"></i>Waiting for approval</button>
+                    {% endif %}
+                    {% if request.user in obj.friends.all %}
+                    <form action="{% url 'profiles:remove-friend'%}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="profile_pk" value={{ obj.pk }}>
+
+                        <button type="submit" class="ui negative basic button mb-5 w-big"><i
+                                class="minus square icon"></i>Remove from friends</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="ui grid">
+    <br>
+    <div class="row">
+        <div class="four wide column">
+            <img class="ui medium rounded image" src={{object.avatar.url }}>
+            {% if object.first_name %}
+            <h3>{{object.first_name}} {{object.last_name}}</h3>
+            {%else%}
+            <h1>{{object.user}}</h1>
+            {% endif %}
+            <p>{{ object.bio }}</p>
+            <div class="ui vertical fluid menu">
+                <div class="item">
+                    Posts
+                    <div class="ui label">{{ object.get_posts_no }}</div>
+                </div>
+                <div class="item">
+                    Likes given
+                    <div class="ui label">{{ object.get_likes_given_no }}</div>
+                </div>
+                <div class="item">
+                    Friends
+                    <div class="ui label">{{ object.get_friends_no }}</div>
+                </div>
+                {% if object.get_friends_no != 0 %}
+                <div class="item"> 
+                    <button class='ui secondary button' id='modal-btn'>See Friends</button>
+                </div>
+                {% endif %}
+            </div>
+            {% if object.user != request.user %}
+            {% if object.user not in rel_receiver and object.user not in rel_sender %}
+            <form action="{% url 'profiles:send-invite' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="profile_pk" value={{ object.pk }}>
+                <button type="submit" class="ui positive basic button mb-5 w-big"><i class="plus square icon"></i>Add to
+                    friends</button>
+
+            </form>
+            {% endif %}
+            {% if object.user in rel_receiver and request.user not in object.friends.all %}
+            <button class="ui disabled button mb-5 w-big"><i class="user icon"></i>Waiting for approval</button>
+            {% endif %}
+            {% if request.user in object.friends.all %}
+            <form action="{% url 'profiles:remove-friend'%}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="profile_pk" value={{ object.pk }}>
+
+                <button type="submit" class="ui negative basic button mb-5 w-big"><i
+                        class="minus square icon"></i>Remove from friends</button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+        <div class="twelve wide column">
+            {% if not posts %}
+            <div class="ui fluid card">
+                <div class="content">
+                    <div class="right floated meta">
+                        <div class="ui grid">
+                            <h1 style="text-align: center;">No posts yet . . .</h1>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% for obj in posts %}
+
+                <div class="ui fluid card">
+                    <div class="content">
+                        <div class="right floated meta">
+                            <div class="ui grid">
+                                <div class="row">
+                                    {% ifequal request.user obj.author.user %}
+                                    <a href="{% url 'post-update' obj.pk %}"><button
+                                            class="ui button bwhite-lg ">Update</button></a>
+                                    <a href="{% url 'post-delete' obj.pk %}"><button
+                                            class="ui button bwhite-lg ">Delete</button></a>
+                                    {% endifequal %}
+                                </div>
+                            </div>
+
+                        </div>
+                        <img class="ui avatar image" src={{obj.author.avatar.url}}>
+                        <a href="{% url 'profiles:profile-detail-view' obj.author.slug%}">{{ obj.author.user }}</a> -
+                        {{ obj.created|timesince}} ago
+                    </div>
+                    <div class="ui fluid image">
+                        {% if obj.image %}
+                        <img src={{obj.image.url}}>
+                        {% endif %}
+                    </div>
+                    <div class="content">
+                        <p> {{ obj.content }} </p>
+                        <div class="right floated">
+                            <form action="{% url 'like-post-view' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="post_id" value={{obj.id}}>
+                                {% if profile not in obj.liked.all %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="thumbs up icon"></i>
+                                </button>
+                                <span> {{obj.num_likes}} likes</span>
+                                {% else %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="thumbs down icon"></i>
+                                </button>
+                                <span> {{obj.num_likes}} likes</span>
+                                {% endif %}
+                            </form>
+                            <form action="{% url 'like-post-view' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="post_id" value={{obj.id}}>
+                                {% if profile not in obj.favorite.all %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="far fa-heart"></i>
+                                </button>
+                                {% else %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="far fa-heart"></i>
+                                </button>
+                                {% endif %}
+
+                            </form>
+                            <div class="col-md-7 d-flex justify-content-between">
+                                <div>
+                                    <a href="{% url 'favourite-add' obj.id %} " class="btn btn-outline-primary">Add to
+                                        Favourites</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <i class="comment icon"></i>
+                        <span> {{ obj.num_comments }} comments</span>
+                    </div>
+                    <div class="extra content">
+                        <div class="mb-5">
+
+                        </div>
+                        <button class="cmt_btn ui button mb-5">show / hide comments</button>
+                        <div class="comment-box">
+                            {% if obj.comment_set.all %}
+                            {% for c in obj.comment_set.all %}
+
+                            <div class="ui segment mb-5">
+                                <img class="ui avatar image" src={{c.user.avatar.url}}>
+                                <span>{{ c.user }}</span>
+                                <div class='mt-5'>{{ c.body }}</div>
+                            </div>
+
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <form action="" method="POST" class='ui fluid form'>
+                            {% csrf_token %}
+                            <input type="hidden" name="post_id" value={{obj.id}}>
+                            {{ c_form }}
+                            <button type="submit" name="submit_c_form"
+                                class="ui primary button mt-5 w-full">Send</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endblock  %}
+    {% block scripts %}
+    <script>
+        $(document).ready(function () {
+            let display = false
+            $(".cmt_btn").click(function () {
+                if (display === false) {
+                    $(this).next(".comment-box").show("slow");
+                    display = true
+                } else {
+                    $(this).next(".comment-box").hide("slow");
+                    display = false
+                }
+            });
+        });
+    </script>
+    {% endblock scripts %}

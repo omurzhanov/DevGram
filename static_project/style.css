@@ -1,0 +1,69 @@
+body {
+    background: #F8F8F8 !important;
+}
+
+.nav {
+    border-radius: 0px !important;
+    padding: 10px 0 10px 0 !important;
+    background-color: #396afc !important;
+}
+
+.mb-7 {
+    margin-bottom: 7px !important;
+}
+
+.mt-5 {
+    margin-top: 5px !important;
+}
+
+.mymodal {
+    height: 300px !important;
+    top: 200px !important;.pagination{
+    text-align: center;
+    margin-top: 1em;
+}
+
+    font-size: 20px !important;
+}
+
+.mb-5 {
+    margin-bottom: 5px !important;
+}
+
+.w-big {
+    width: 200px !important;
+}
+
+.bwhite-lg {
+    background-color: transparent !important;
+}
+
+.bwhite-sm {
+    background-color: transparent !important;
+    width: 10px !important;
+}
+
+.comment-box {
+    display: none;
+}
+.mymodal{
+    height: 300px; !important
+}
+.pagination{
+    text-align: center;!important
+    margin-top: 1em;!important
+}
+.pagination-action{
+    margin: 0 0.1em;!important
+    display: inline-block;!important
+    padding: 0.5em;!important
+    color: #B9B9B9;!important
+    font-size: 1.3em;!important
+}
+.pagination-action:hover{
+    color: #3354AA;!important
+}
+
+label>input[type="radio"], label>input[type="radio"]:checked~button {display:none}
+
+

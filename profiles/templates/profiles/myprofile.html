@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}
+my profile
+{% endblock title %}
+
+{% block content %}
+
+<!-- MODAL -->
+<div class="ui modal mymodal">
+  <i class="close icon"></i>
+  <div class="header">
+    Update your Profile
+  </div>
+  <div class="image content">
+    <div class="ui medium image">
+      <img src="{{profile.avatar.url}}">
+    </div>
+    <div class="description">
+      <div class="ui header">Provide some additional/newest info about you </div>
+     <form action="" method="POST" class="ui form" enctype='multipart/form-data'>
+        {% csrf_token %}
+        {{form.as_p}}
+    </div>
+  </div>
+  <div class="actions">
+    <button type='submit' class="ui positive right labeled icon button">
+      Update
+      <i class="checkmark icon"></i>
+    </button>
+    </form>
+  </div>
+</div>
+
+
+
+<div class="ui segment">
+    {% if confirm %}
+        <div class="ui green message">Your profile has been updated</div>
+    {% endif %}
+    <h3>my profile: {{request.user}}</h3>
+    <div class="ui grid">
+        <div class='row'>
+            <div class='six wide column'>
+                <img class="ui medium rounded image" src={{profile.avatar.url}}>
+                <div class="row mt-5">
+                    <button class='ui secondary button' id='modal-btn'>Update your profile</button>
+                </div>
+            </div>
+            <div class="ten wide column">
+                <table class="ui table">
+                    <tbody>
+                        <tr>
+                            <td>username</td>
+                            <td>{{profile.user}}</td>
+                        </tr>
+                        <tr>
+                            <td>first name</td>
+                            <td>{{profile.first_name}}</td>
+                        </tr>
+                        <tr>
+                            <td>last name</td>
+                            <td>{{profile.last_name}}</td>
+                        </tr>
+                        <tr>
+                            <td>bio</td>
+                            <td>{{profile.bio}}</td>
+                        </tr>
+                        <tr>
+                            <td>number of friends</td>
+                            <td>{{profile.get_friends_no}}</td>
+                        </tr>
+                        <tr>
+                            <td>number of posts</td>
+                            <td>{{profile.get_posts_no}}</td>
+                        </tr>
+                        <tr>
+                            <td>number of likes given</td>
+                            <td>{{profile.get_likes_given_no}}</td>
+                        </tr>
+                        <tr>
+                            <td>number of likes received</td>
+                            <td>{{profile.get_likes_received_no}}</td>
+                        </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="ui grid">
+        <div class="eleven wide column">
+            {% if not posts %}
+            <div class="ui fluid card">
+                <div class="content">
+                    <div class="right floated meta">
+                    <div class="ui grid">
+                            <h1 style="text-align: center;">No posts yet . . .</h1>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% for obj in posts %}
+    
+            <div class="ui fluid card">
+                <div class="content">
+                    <div class="right floated meta">
+                    <div class="ui grid">
+                        <div class="row">
+                            {% ifequal request.user obj.author.user %}
+                                <a href="{% url 'post-update' obj.pk %}"><button class="ui button bwhite-lg ">Update</button></a>
+                                <a href="{% url 'post-delete' obj.pk %}"><button class="ui button bwhite-lg ">Delete</button></a>
+                            {% endifequal %}
+                        </div>
+                    </div>
+                        
+                    </div>
+                    <img class="ui avatar image" src={{obj.author.avatar.url}}> 
+                    <a href="{% url 'profiles:profile-detail-view' obj.author.slug%}">{{ obj.author.user }}</a> - {{ obj.created|timesince}} ago
+                </div>
+                <div class="ui fluid image">
+                    {% if obj.image %}
+                        <img src={{obj.image.url}}>
+                    {% endif %}
+                </div>
+                <div class="content">
+                    <p> {{ obj.content }} </p>
+                    <div class="right floated">
+                        <form action="{% url 'like-post-view' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="post_id" value={{obj.id}}>
+                            {% if profile not in obj.liked.all %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="thumbs up icon"></i>
+                                </button>
+                                <span> {{obj.num_likes}} likes</span>
+                            {% else %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="thumbs down icon"></i>
+                                </button>
+                                <span> {{obj.num_likes}} likes</span>
+                            {% endif %}
+                        </form>
+                    <form action="{% url 'like-post-view' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="post_id" value={{obj.id}}>
+                            {% if profile not in obj.favorite.all %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="far fa-heart"></i>
+                                </button>
+                            {% else %}
+                                <button type="submit" class="ui bwhite-sm button"><i class="far fa-heart"></i>
+                                </button>
+                            {% endif %}
+    
+                    </form>
+                        <div class="col-md-7 d-flex justify-content-between">
+                            <div>
+                                <a href="{% url 'favourite-add' obj.id %} " class="btn btn-outline-primary">Add to Favourites</a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <i class="comment icon"></i>
+                    <span> {{ obj.num_comments }} comments</span>
+                </div>
+                <div class="extra content">
+                    <div class="mb-5">
+                      
+                    </div>
+                    <button class="cmt_btn ui button mb-5">show / hide comments</button>
+                    <div class="comment-box">
+                    {% if obj.comment_set.all %}
+                        {% for c in obj.comment_set.all %}
+                        
+                            <div class="ui segment mb-5">
+                                <img class="ui avatar image" src={{c.user.avatar.url}}>
+                                <span>{{ c.user }}</span>
+                                <div class='mt-5'>{{ c.body }}</div>
+                            </div>
+                        
+                        {% endfor %}
+                    {% endif %}
+                    </div>
+                    <form action="" method="POST"class='ui fluid form'>
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value={{obj.id}}>
+                        {{ c_form }}
+                        <button type="submit" name="submit_c_form" class="ui primary button mt-5 w-full">Send</button>
+                    </form>
+                </div>
+            </div>
+    
+    
+            {% endfor %}
+        </div>
+    </div>    
+</div>
+
+{% endblock content %}
+{% block scripts %} 
+    <script>
+        $( document ).ready(function() {
+            let display = false
+            $(".cmt_btn").click(function () {
+                if (display===false) {
+                    $(this).next(".comment-box").show("slow");
+                    display=true
+                } else {
+                    $(this).next(".comment-box").hide("slow");
+                    display=false
+                }  
+            });
+        });
+    </script>
+{% endblock scripts %}
